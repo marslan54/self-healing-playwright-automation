@@ -1,14 +1,31 @@
 import { Page, Locator } from '@playwright/test';
+import { selfHealingLocator } from './selfHeal'; // Adjust the path if needed
 
-export async function getTooltipValueOnHover(page: Page, barSelector: string): Promise<{
-  label: string;
-  value: number;
-}> {
-  const bar: Locator = page.locator(`${barSelector} path`);
-  await bar.hover();
+export async function getTooltipValueOnHover(
+  page: Page,
+  barSelector: string
+): Promise<{ label: string; value: number }> {
+  // Use self-healing locator for the bar
+  const barPathLocator = await selfHealingLocator(
+    page,
+    `${barSelector} path`,
+    'Chart bar element to hover'
+  ) as Locator
 
-  const labelLocator = page.locator('.recharts-tooltip-item-name');
-  const valueLocator = page.locator('.recharts-tooltip-item-value');
+  await barPathLocator.hover();
+
+  // Use self-healing for label and value tooltip
+  const labelLocator = await selfHealingLocator(
+    page,
+    '.recharts-tooltip-item-name',
+    'Tooltip label showing chart category'
+  ) as Locator
+
+  const valueLocator = await selfHealingLocator(
+    page,
+    '.recharts-tooltip-item-value',
+    'Tooltip value showing chart number'
+  ) as Locator
 
   await labelLocator.waitFor({ state: 'visible', timeout: 3000 });
 
